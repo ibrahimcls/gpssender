@@ -1,10 +1,12 @@
-import 'package:gpssender/model/user_model.dart';
+import 'package:gpssender/model/driver_model.dart';
 import 'package:hive_flutter/adapters.dart';
 
+part 'login_response_model.g.dart';
+
 @HiveType(typeId: 1)
-class LoginResponse {
+class LoginResponse extends HiveObject {
   @HiveField(0)
-  final User? user;
+  final Driver? driver;
   @HiveField(1)
   final String? token;
   @HiveField(2)
@@ -13,15 +15,16 @@ class LoginResponse {
   final String? message;
 
   LoginResponse({
-    this.user,
-    this.token,
+    required this.driver,
+    required this.token,
     required this.success,
-    this.message,
+    required this.message,
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
-      user: json['data'] != null ? User.fromJson(json['data']['item1']) : null,
+      driver:
+          json['data'] != null ? Driver.fromJson(json['data']['item1']) : null,
       token: json['data'] != null ? json['data']['item2'] : null,
       success: json['success'],
       message: json['message'],

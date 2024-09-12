@@ -1,7 +1,9 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
+part 'driver_model.g.dart';
+
 @HiveType(typeId: 2)
-class User {
+class Driver {
   @HiveField(0)
   final int id;
   @HiveField(1)
@@ -12,22 +14,25 @@ class User {
   final String phoneNumber;
   @HiveField(4)
   final String email;
+  @HiveField(5)
+  final String systemRole;
 
-  User({
-    required this.id,
-    required this.nameSurname,
-    required this.username,
-    required this.phoneNumber,
-    required this.email,
-  });
+  Driver(
+      {required this.id,
+      required this.nameSurname,
+      required this.username,
+      required this.phoneNumber,
+      required this.email,
+      required this.systemRole});
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
+  factory Driver.fromJson(Map<String, dynamic> json) {
+    return Driver(
       id: json['id'],
       nameSurname: json['nameSurname'],
       username: json['username'],
       phoneNumber: json['phoneNumber'],
       email: json['email'],
+      systemRole: 'systemRole',
     );
   }
 }

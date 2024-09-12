@@ -15,16 +15,19 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
-  final TextEditingController _usernameController =
-      TextEditingController(text: 'YAGIZ');
+  var username = "BALIAKTAS";
+  var pwd = "BALIAKTAS123";
 
-  final TextEditingController _passwordController =
-      TextEditingController(text: '159753');
+  late TextEditingController _usernameController;
+
+  late TextEditingController _passwordController;
 
   @override
   void initState() {
     super.initState();
     checkLocationPermission();
+    _usernameController = TextEditingController(text: username);
+    _passwordController = TextEditingController(text: pwd);
   }
 
   Future<void> checkLocationPermission() async {
@@ -112,14 +115,14 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         );
   }
 
-  void loginSuccess(BuildContext context, LoginResponse loginResponse) {
+  Future<void> loginSuccess(
+      BuildContext context, LoginResponse loginResponse) async {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Login Successful')),
     );
     var userBox = Hive.box<LoginResponse>('user');
-    userBox.clear();
-    userBox.add(loginResponse);
-    Navigator.push(
+    userBox.put('driver', loginResponse);
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const HomePage()),
     );
@@ -128,7 +131,6 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final loginModel = Provider.of<LoginModel>(context);
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(

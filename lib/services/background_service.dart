@@ -11,7 +11,6 @@ const notificationId = 888;
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
-
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     notificationChannelId,
     'MY FOREGROUND SERVICE',
@@ -49,6 +48,10 @@ void onStart(ServiceInstance service) {
   Timer.periodic(const Duration(seconds: 5), (timer) {
     service.invoke('task');
     callback();
+  });
+  service.on("stop").listen((event) {
+    service.stopSelf();
+    print("background process is now stopped");
   });
 }
 
