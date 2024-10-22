@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:gpssender/model/active_tracking_response.dart';
 import 'package:gpssender/model/login_response_model.dart';
+import 'package:gpssender/model/position_model.dart';
 import 'package:gpssender/model/response_model.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,13 +20,8 @@ class ApiService {
       body: jsonEncode({'username': username, 'password': password}),
     );
 
-    if (response.statusCode == 200) {
-      final responseBody = jsonDecode(response.body);
-      return LoginResponse.fromJson(responseBody);
-    } else {
-      throw Exception(
-          'Failed to connect to the server. Status code: ${response.statusCode}');
-    }
+    final responseBody = jsonDecode(response.body);
+    return LoginResponse.fromJson(responseBody);
   }
 
   Future<ActiveTrackingResponse> getActiveTracking(
@@ -51,9 +47,31 @@ class ApiService {
         'Content-Type': 'application/json',
         'Authorization': "Bearer $token"
       },
-      body: jsonEncode({trackingId: trackingId, lat: lat, long: long}),
+      body: jsonEncode({'trackingId': trackingId, 'lat': lat, 'long': long}),
     );
 
+    final responseBody = jsonDecode(response.body);
+    return ResponseModel.fromJson(responseBody);
+  }
+
+  Future<ResponseModel> insertTracking1(
+      String token, int trackingId, List<PositionModel> locs) async {
+    List<Map<String, String>> locations = locs.map((positionModel) {
+      return {
+        "trackingId": trackingId.toString(),
+        "loc":
+            "${positionModel.position.latitude},${positionModel.position.longitude}",
+        "dateTime": positionModel.date,
+      };
+    }).toList();
+    final response = await http.post(
+      Uri.parse('$_baseUrl$_trackingLogEP'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': "Bearer $token",
+      },
+      body: jsonEncode(locations),
+    );
     final responseBody = jsonDecode(response.body);
     return ResponseModel.fromJson(responseBody);
   }

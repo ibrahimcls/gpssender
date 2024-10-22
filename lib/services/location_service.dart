@@ -1,22 +1,26 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:gpssender/model/active_tracking.dart';
-import 'package:gpssender/model/login_response_model.dart';
+import 'package:gpssender/model/position_model.dart';
 import 'package:gpssender/services/api_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-void callback() async {
-  await _determinePosition().then((position) => insertPosition(position));
+List<PositionModel> positionList = [];
+
+void callback(String token, ActiveTracking activeTracking) async {
+  String date = DateTime.now().toIso8601String();
+  await _determinePosition().then((position) =>
+      positionList.add(PositionModel(date: date, position: position)));
+
+  if (positionList.length >= 30) {
+    insertPosition(token, activeTracking, positionList);
+    positionList.clear();
+  }
 }
 
-insertPosition(Position position) {
-  print('long: ${position.longitude} lat: ${position.latitude}');
-  var token = getToken();
-  var activeTracking = getActiveTracking();
+insertPosition(
+    String token, ActiveTracking at, List<PositionModel> positionList) {
   ApiService apiService = ApiService();
-  apiService
-      .insertTracking(
-          token!, activeTracking!.id, position.longitude, position.latitude)
-      .then((response) {
+  apiService.insertTracking1(token, at.id, positionList).then((response) {
     print(
         'i-test insert response : ${response.success} message: ${response.message}');
   });
@@ -25,12 +29,6 @@ insertPosition(Position position) {
 ActiveTracking? getActiveTracking() {
   var activeTracking = Hive.box<ActiveTracking>('at');
   return activeTracking.get('active');
-}
-
-String? getToken() {
-  var user = Hive.box<LoginResponse>('user');
-  var lrm = user.get('driver');
-  return lrm?.token;
 }
 
 Future<Position> _determinePosition() async {

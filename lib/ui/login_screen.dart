@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:gpssender/model/login_model.dart';
 import 'package:gpssender/model/login_response_model.dart';
 import 'package:gpssender/ui/home_page.dart';
@@ -15,19 +14,28 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
-  var username = "BALIAKTAS";
-  var pwd = "BALIAKTAS123";
+  var username = "";
+  var pwd = "";
 
   late TextEditingController _usernameController;
-
   late TextEditingController _passwordController;
 
   @override
   void initState() {
     super.initState();
     checkLocationPermission();
+
     _usernameController = TextEditingController(text: username);
     _passwordController = TextEditingController(text: pwd);
+
+    if (isAlreadyLogin()) {
+      Future.microtask(() {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      });
+    }
   }
 
   Future<void> checkLocationPermission() async {
@@ -93,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   void checkPermissionAfterSettings() async {
     var status = await Permission.locationAlways.status;
     if (status.isGranted) {
-      Navigator.of(context).pop(); // Pop-up'ı kapat
+      Navigator.of(context).pop();
       print("Lokasyon izni granted");
     } else {
       print("Lokasyon izni hala denied");
@@ -120,46 +128,70 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Login Successful')),
     );
-    var userBox = Hive.box<LoginResponse>('user');
-    userBox.put('driver', loginResponse);
+    saveLoginModel(loginResponse);
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const HomePage()),
     );
   }
 
+  void saveLoginModel(LoginResponse loginResponse) {
+    var userBox = Hive.box<LoginResponse>('user');
+    userBox.put('driver', loginResponse);
+  }
+
+  bool isAlreadyLogin() {
+    var user = Hive.box<LoginResponse>('user');
+    var lrm = user.get('driver');
+    return lrm != null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final loginModel = Provider.of<LoginModel>(context);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              SvgPicture.asset(
-                'assets/login.svg',
-                height: 150,
+              Image.asset(
+                'assets/logo.png',
+                height: 100,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               const Text(
-                'Welcome Back!',
+                'Hoşgeldiniz',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: Colors.blueAccent,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+              const Text(
+                'Lütfen giriş yapın',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 30),
               TextField(
                 controller: _usernameController,
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.person),
+                  prefixIcon:
+                      const Icon(Icons.person, color: Colors.blueAccent),
                   labelText: 'Username',
+                  labelStyle: const TextStyle(color: Colors.blueAccent),
+                  filled: true,
+                  fillColor: Colors.blueAccent.withOpacity(0.1),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0),
+                    borderSide: BorderSide.none,
                   ),
                 ),
                 onChanged: (value) => loginModel.setUsername(value),
@@ -168,26 +200,36 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               TextField(
                 controller: _passwordController,
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.lock),
+                  prefixIcon: const Icon(Icons.lock, color: Colors.blueAccent),
                   labelText: 'Password',
+                  labelStyle: const TextStyle(color: Colors.blueAccent),
+                  filled: true,
+                  fillColor: Colors.blueAccent.withOpacity(0.1),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0),
+                    borderSide: BorderSide.none,
                   ),
                 ),
                 obscureText: true,
                 onChanged: (value) => loginModel.setPassword(value),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30.0),
                   ),
+                  elevation: 5,
+                  shadowColor: Colors.blueAccent.withOpacity(0.5),
                 ),
                 onPressed: () => loginPressed(context, loginModel),
-                child: const Text('Login', style: TextStyle(fontSize: 18)),
+                child: const Text(
+                  'Login',
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
               ),
             ],
           ),

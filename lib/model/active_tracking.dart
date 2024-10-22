@@ -30,4 +30,18 @@ class ActiveTracking {
         startDate: json['startDate'],
         finishDate: json['finishDate']);
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'startDate': startDate,
+      'finishDate': finishDate,
+    };
+  }
+
+  String getText() {
+    return '$title\n$description\nbaşlangıç tarihi: $startDate\nbitiş tarihi: $finishDate\n';
+  }
 }
